@@ -1,16 +1,23 @@
 // api/index.js
 import 'dotenv/config';
 import serverless from 'serverless-http';
-import connectDB from '../server/configs/mongodb.js';
-import app from '../server/app.js';
+import mongoose from 'mongoose';
+import express from 'express';
+
+const app = express();
+app.use(express.json());
+app.get('/', (req, res) => res.send('Serverless API working'));
 
 let isConnected = false;
 
+const connectDB = async () => {
+  if (isConnected) return;
+  await mongoose.connect(process.env.MONGODB_URI);
+  isConnected = true;
+};
+
 const handler = async (req, res) => {
-  if (!isConnected) {
-    await connectDB();
-    isConnected = true;
-  }
+  await connectDB();
   return app(req, res);
 };
 
